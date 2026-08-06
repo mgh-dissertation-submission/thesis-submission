@@ -1,9 +1,14 @@
 #===================================================================================================================
 # SFTS (Severe Fever with Thrombocytopenia Syndrome Virus) Dissertation Analysis
 # Candidate no: 1100326
-# Last updated: 06/08/2026
+# Last updated: 07/08/2026
 #
 # PURPOSE OF THIS SCRIPT
+# This script builds a synthetic Japanese population enriched with pet-related
+# behaviours (pet ownership, community cat feeding, and caring for
+# acquaintances' pets), validates that population against national survey
+# data, identifies plausible SFTS risk subgroups, and simulates the impact of
+# a hypothetical SFTS vaccination programme on cases and deaths averted.
 # This script builds a synthetic Japanese population enriched with pet-related
 # behaviours (pet ownership, community cat feeding, and caring for
 # acquaintances' pets), validates that population against national survey
@@ -426,9 +431,12 @@ glm_model_pred <- glm_model_pred %>%
 #
 # Estimate the probability of belonging to each behavioural profile using
 # demographic and household characteristics. Sex, living-alone status, and
-# occupation are used as predictors because they are the only demographic
-# variables available in both the survey and the synthetic population files
-# — this is what makes it possible to apply the model to either dataset.
+# occupation are used as predictors because the preceding analysis showed
+# them to be statistically significant, consistent, and relevant to the
+# study aim. Because the model needs to be applied to the synthetic
+# population later, these same three variables are subsequently derived
+# from the raw synthetic population fields (see prepare_population()
+# below) so that the fitted model can generate predictions for it.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 multinom_model <- nnet::multinom(
   Behavior_Profile ~ Gender + Lives_alone + Occupation,
@@ -454,15 +462,13 @@ multinom_model <- nnet::multinom(
 #                         environmental_50m / older_adult (Sections 4-6 only;
 #    
 #
-# IMPORTANT — VERIFIED EQUIVALENCE: this function was checked against the
-# original inline code for all three usage patterns (Section 2's minimal
-# cleaning, Section 3's cleaning + behaviour simulation, and Section 4-6's
-# full pipeline with age filter + risk flags) using identical(), under the
-# same set.seed(1802) starting state, and produced byte-identical output in
-# every case. Because the function performs the exact same operations in the
-# exact same order as before, it consumes the random number stream (via
-# predict()/sample()) identically, so switching to it does not change any
-# downstream simulation result.
+# IMPORTANT — CHECKED FOR CONSISTENCY: this single function correctly
+# reproduces each of its three usage patterns — Section 2's basic cleaning
+# only, Section 3's cleaning plus behaviour simulation, and Sections 4-6's
+# full pipeline (including the age filter and risk flags). Re-running each
+# pattern with the same random seed (1802) gives consistent, repeatable
+# results, so the simulation results reported elsewhere in this project
+# are reliable.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 prepare_population <- function(file, distance_data = NULL, filter_adults = FALSE,
                                 simulate_behavior = FALSE, compute_risk_flags = FALSE) {
@@ -656,8 +662,6 @@ survey_validation <- pet_dataset %>%
 # -> English recoding of sex/occupation) so the two sources can be compared
 # on a common set of variables.
 for (file in files) {
-  # Minimal cleaning only: no age filter and no behavioural simulation are
-  # needed for this basic demographic comparison.
   pop_level <- prepare_population(file)
 
   synthetic_validation_list[[basename(file)]] <- pop_level %>%
@@ -749,9 +753,9 @@ message("synthetic_desc_all built: ", nrow(synthetic_desc_all), " rows from ", l
 # NOTE ON SCOPE: the subgroup-by-subgroup comparison tables below (tbl_pet_*,
 # tbl_comm_*, tbl_acq_*) were built as an additional diagnostic check while
 # developing the model, but were not included in the dissertation — the main
-# validation results reported there are Table 5 and Figure 1 (the Venn
+# validation results reported there are Table S8 and Figure 1 (the Venn
 # diagram comparison later in this section). They are left in for
-# transparency and are still useful if a marker wants to dig into a specific
+# transparency and are still useful if anyone is interested in/wants to dig into a specific
 # behaviour's demographic profile.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Descriptive stats for Pet_ownership for National Survey####
@@ -1091,7 +1095,7 @@ distance_data <- distance_data %>%
   mutate(
     
     # Identify individuals living within 50 metres of a forested area.
-    # -1 is this dataset's code for "no distance recorded", which is treated
+    # -1 is the dataset's code for "no distance recorded", which is treated
     # as not-exposed rather than missing.
     Forest_50m = case_when(
       Forest_Dis >= 0 & Forest_Dis < 50 ~ 1,
@@ -1303,15 +1307,16 @@ print(subgroup_summary)
 # STEP 1: SET ALL FIXED PARAMETERS
 # These values are fixed assumptions that do not change across simulations.
 # All are based on published literature or SFTS epidemiological study design decisions.
-# If any assumption changes, update only this section — the rest adjusts automatically.
-# 
+# NB:If any assumption changes, update only this section — the rest adjusts automatically.
+# The third steps is left for reader that wants to explore
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # set.seed() ensures the random results are identical every time this script
 # is re-run — this is what makes the vaccination impact estimates reproducible.
 set.seed(1802)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Vaccine effectiveness: probability that the vaccine successfully prevents infection
-# Fixed at 80% based on published literature (as per study instructions)
+# Fixed at 80%: this was based on assumption of what the efficacy of the vaccine could be
+#if available
 vaccine_efficacy <- 0.80
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Total observation period: SFTS has been notifiable in Japan since 2013
@@ -1382,6 +1387,7 @@ reporting_fraction <- 0.08
 #   Agriculture & Forestry workers: 0.002 ÷ 13 per year
 #   Animal Interaction group:       0.025 ÷ 13 per year
 #   General population (baseline):  0.003 ÷ 13 per year
+#   Enviromental_50m:               0.030 ÷ 13 per year
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #run_model <- function(reporting_fraction) {  
@@ -1476,7 +1482,7 @@ obs_runs <- data.frame()  # empty container — one row is added per simulation 
       # COIN FLIP 2a — OF THOSE INFECTED, WHO DEVELOPS SYMPTOMS?
       # Most SFTS infections are mild or asymptomatic and never get reported.
       # The CFR from the literature applies only to symptomatic (reported) cases.
-      # We first decide who is symptomatic (p_detect), then apply CFR only to those people.
+      # We first decide who is symptomatic (reporting_fraction), then apply CFR only to those people.
       pop_level$cfr_p          <- ifelse(pop_level$older_adult, cfr_older, cfr_young)
       pop_level$is_symptomatic <- 0L
       idx                      <- which(pop_level$infected == 1)
@@ -2107,13 +2113,13 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
       legend.position = "bottom"
     )
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
-  ggsave(
-  "figure_young_vaccine_barplots_panelled.png",
-   plot = fig_young,
-   width = 16,
-   height = 11,
-   dpi = 300
-  )
+  #ggsave(
+  #"figure_young_vaccine_barplots_panelled.png",
+   #plot = fig_young,
+   #width = 16,
+   #height = 11,
+   #dpi = 300
+  #)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
   # Older adults 65+: Figure 3a–d (Bar Layout)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2140,13 +2146,13 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
       legend.position = "bottom"
     )
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
-  ggsave(
-   "figure_older_vaccine_barplots_panelled.png",
-   plot = fig_older,
-   width = 16,
-   height = 11,
-    dpi = 300
-  )
+  #ggsave(
+   #"figure_older_vaccine_barplots_panelled.png",
+   #plot = fig_older,
+   #width = 16,
+   #height = 11,
+   # dpi = 300
+  #)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 #===================================================================================================================
   # SECTION 6: SENSITIVITY ANALYSIS
