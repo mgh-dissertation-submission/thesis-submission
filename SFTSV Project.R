@@ -13,7 +13,7 @@
 # behaviours (pet ownership, community cat feeding, and caring for
 # acquaintances' pets), validates that population against national survey
 # data, identifies plausible SFTS risk subgroups, and simulates the impact of
-# a hypothetical SFTS vaccination programme on cases and deaths averted.
+# A hypothetical SFTS vaccination programme on cases and deaths averted.
 #
 # SECTIONS IN THIS SCRIPT
 #   1. Setup                          — clean survey data, construct pet-behaviour indicators, fit multinomial model
@@ -250,7 +250,7 @@ pet_dataset <- pet_dataset %>%
 # pet caregiving status, and community cat caregiving status.
 # Mean (SD) is calculated for age, while frequencies (%) are
 # reported for categorical variables. Independent sample t tests
-# and chi square tests are performed to assess differences
+# and chi-square tests are performed to assess differences
 # between groups.
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------    
 #Descriptive statistics and inferential analysis for pet ownership
@@ -283,8 +283,8 @@ table_pet_owner <- pet_dataset %>%
 table_pet_owner
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #save the table as docx####
-#gtsave(as_gt(table_pet_owner),
-       #"table_pet_owner_Table.docx")
+gtsave(as_gt(table_pet_owner),
+       "table_pet_owner_Table.docx")
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------    
 #Descriptive statistics and inferential analysis for acquaintance pets
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------    #---------------------------------
@@ -324,8 +324,8 @@ table_acquaintance <- pet_dataset %>%
 table_acquaintance
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #save the table as docx####
-#gtsave(as_gt(table_acquaintance),
-     #  "table_acquaintance_Table.docx")
+gtsave(as_gt(table_acquaintance),
+       "table_acquaintance_Table.docx")
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Descriptive statistics and inferential analysis for Community Cat Carers
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -365,8 +365,8 @@ table_community <- pet_dataset %>%
 table_community
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #save the table as docx####
-#gtsave(as_gt(table_community),
-  #     "table_community.docx")
+gtsave(as_gt(table_community),
+       "table_community.docx")
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Building baseline model for the whole population####
 #predict community cat caring behaviour using demographic and household variables####
@@ -701,7 +701,7 @@ validation_table <- validation_data %>%
 validation_table
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # save the table
-#gtsave(as_gt(validation_table),"validation_table.docx")
+gtsave(as_gt(validation_table),"validation_table.docx")
 #====================================================================================================================================================================================
 # SECTION 3: DESCRIPTIVE COMPARISON — National Survey vs Synthetic Population
 # Apply the fitted behavioural model to the synthetic population (all 10
@@ -1066,14 +1066,14 @@ p3 <- ggVennDiagram(
 venn_plot <- (p1 | p3) 
 print(venn_plot)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#save the venn diagram output####
-#ggsave(
- # "venn_plot.png",
- # venn_plot,
-  #width = 16,
-  #height = 8,
-  #dpi = 300
-#)
+#save the Venn diagram output####
+ggsave(
+ "venn_plot.png",
+  venn_plot,
+  width = 16,
+  height = 8,
+  dpi = 300
+)
 #comparison
 #===================================================================================================================
 # SECTION 4: SUBGROUP COUNTING
@@ -1206,7 +1206,7 @@ for(file in files) {
   old_interaction_environment
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
   # Append this file's subgroup counts as one row, so that after the loop
-  # finishes we have 10 rows (one per synthetic population) to summarise.
+  # finishes, we have 10 rows (one per synthetic population) to summarise.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  # --------------------------------------------------
   subgroup_results <- rbind(
     subgroup_results,
@@ -1270,7 +1270,7 @@ print(subgroup_summary)
 # statistics table to verify that all synthetic populations were processed
 # successfully and that uncertainty estimates were generated correctly.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------        
-#gtsave(subgroup_summary, "subgroup_summary2.docx")
+gtsave(subgroup_summary, "subgroup_summary2.docx")
 #========================================================================================================================================================
 # SECTION 5: VACCINATION SCENARIO ANALYSIS
 # Stochastic simulation of cases and deaths averted under hypothetical
@@ -1307,15 +1307,15 @@ print(subgroup_summary)
 # STEP 1: SET ALL FIXED PARAMETERS
 # These values are fixed assumptions that do not change across simulations.
 # All are based on published literature or SFTS epidemiological study design decisions.
-# NB:If any assumption changes, update only this section — the rest adjusts automatically.
-# The third steps is left for reader that wants to explore
+# NB: If any assumption changes, update only this section — the rest adjusts automatically.
+# The third step is left for the reader who wants to explore
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # set.seed() ensures the random results are identical every time this script
 # is re-run — this is what makes the vaccination impact estimates reproducible.
 set.seed(1802)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Vaccine effectiveness: probability that the vaccine successfully prevents infection
-# Fixed at 80%: this was based on assumption of what the efficacy of the vaccine could be
+# Fixed at 80%: this was based on the assumption of what the efficacy of the vaccine could be
 #if available
 vaccine_efficacy <- 0.80
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1348,7 +1348,7 @@ envi_annual_obs<-environmental_seroprevalence    /  years_accumulated  # 0.030 �
 agr_annual_wc <- agriculture_seroprevalence         # 0.002 — used as a direct annual rate
 ani_annual_wc <- animal_interaction_seroprevalence  # 0.025 — used as a direct annual rate
 bas_annual_wc <- baseline_seroprevalence            # 0.003 — used as a direct annual rate
-envi_annual_wc<-environmental_seroprevalence        # 0.030 — used as a direct annual rate
+envi_annual_wc <- environmental_seroprevalence        # 0.030 — used as a direct annual rate
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Case fatality rate (CFR): probability of dying given SFTS infection
 #5% for adults 18-64 (working-age adults have better outcomes)
@@ -1979,10 +1979,10 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
   }
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   # Display each table — appears in the RStudio Viewer pane
-  #gtsave(render_gt(table_1, "Adults (18\u201364) | Observed Incidence | CFR: 5%"),"table_1.docx")
-  #gtsave(render_gt(table_2, "Adults (18\u201364) | Worst-case Incidence | CFR: 5%"),"table_2.docx")
-  #gtsave(render_gt(table_3, "Older Adults (65+) | Observed Incidence | CFR: 20%"),"table_3.docx")
-  #gtsave(render_gt(table_4, "Older Adults (65+) | Worst-case Incidence | CFR: 20%"),"table_4.docx")
+  gtsave(render_gt(table_1, "Adults (18\u201364) | Observed Incidence | CFR: 5%"),"table_1.docx")
+  gtsave(render_gt(table_2, "Adults (18\u201364) | Worst-case Incidence | CFR: 5%"),"table_2.docx")
+  gtsave(render_gt(table_3, "Older Adults (65+) | Observed Incidence | CFR: 20%"),"table_3.docx")
+  gtsave(render_gt(table_4, "Older Adults (65+) | Worst-case Incidence | CFR: 20%"),"table_4.docx")
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   #Plot box plot to show the impact of the vaccines across ####
   # Prepare data for panelled box plots
@@ -2037,9 +2037,9 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
     df_long %>%
       group_by(scenario, subgroup, outcome, coverage) %>%
       summarise(
-        median_val = median(value, na.rm = TRUE),
-        lower_iqr  = quantile(value, 0.25, na.rm = TRUE),
-        upper_iqr  = quantile(value, 0.75, na.rm = TRUE),
+        median_val = round(median(value, na.rm = TRUE)),
+        lower_iqr  = round(quantile(value, 0.25, na.rm = TRUE)),
+        upper_iqr  = round(quantile(value, 0.75, na.rm = TRUE)),
         .groups    = "drop"
       )
   }
@@ -2113,13 +2113,13 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
       legend.position = "bottom"
     )
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
-  #ggsave(
-  #"figure_young_vaccine_barplots_panelled.png",
-   #plot = fig_young,
-   #width = 16,
-   #height = 11,
-   #dpi = 300
-  #)
+  ggsave(
+  "figure_young_vaccine_barplots_panelled.png",
+   plot = fig_young,
+   width = 16,
+   height = 11,
+   dpi = 300
+  )
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
   # Older adults 65+: Figure 3a–d (Bar Layout)
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2146,13 +2146,13 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
       legend.position = "bottom"
     )
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
-  #ggsave(
-   #"figure_older_vaccine_barplots_panelled.png",
-   #plot = fig_older,
-   #width = 16,
-   #height = 11,
-   # dpi = 300
-  #)
+  ggsave(
+   "figure_older_vaccine_barplots_panelled.png",
+   plot = fig_older,
+   width = 16,
+   height = 11,
+   dpi = 300
+  )
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 #===================================================================================================================
   # SECTION 6: SENSITIVITY ANALYSIS
@@ -2430,5 +2430,5 @@ build_table <- function(results, age_group, cfr_label, agr_prob_label, ani_prob_
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
   sensitivity_gt
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
-  #gtsave(sensitivity_gt, "Supplementary_Table_S5.docx")
+  gtsave(sensitivity_gt, "Supplementary_Table_S5.docx")
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
